@@ -1,17 +1,20 @@
-# gt-sdk
-  Internal cheat framework for the game Growtopia
+## morphine
 
-# Warning
-  The base is not up to date with the latest Growtopia version
+## About
+- morphine is a base cheat framework for the game Growtopia
+- the base is not always up to date with the latest Growtopia version
 
-# [License](LICENSE) [![CC BY-NC-SA 4.0][cc-by-nc-sa-shield]][cc-by-nc-sa] 
-gt-sdk is licensed under [Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International License][cc-by-nc-sa]
-
-[![CC BY-NC-SA 4.0][cc-by-nc-sa-image]][cc-by-nc-sa]
-
-# Credits
+## Credits
 - [trailyy](https://github.com/trailyy)
 - [voidzero](https://github.com/voidzero666)
+- [imgui](https://github.com/ocornut/imgui) - gui
+- [minhook](https://github.com/TsudaKageyu/minhook) - hooking
+- [jsoncpp](https://github.com/open-source-parsers/jsoncpp) - json
+
+## [License](LICENSE) [![CC BY-NC-SA 4.0][cc-by-nc-sa-shield]][cc-by-nc-sa] 
+morphine is licensed under [Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International License][cc-by-nc-sa]
+
+[![CC BY-NC-SA 4.0][cc-by-nc-sa-image]][cc-by-nc-sa]
 
 [cc-by-nc-sa]: http://creativecommons.org/licenses/by-nc-sa/4.0/
 [cc-by-nc-sa-image]: https://licensebuttons.net/l/by-nc-sa/4.0/88x31.png
