@@ -3,16 +3,15 @@
 #include "../proton/Boost.hpp"
 #include "../variant/VariantDB.hpp"
 
+#include "../manager/TextManager.hpp"
+
 class Entity;
 
 #pragma pack(push, 1)
 class EntityComponent
 {
 public:
-	virtual ~EntityComponent();
-	virtual void OnAdd(Entity* entity);
-	virtual void OnRemove();
-
+	void* m_vtable;
 	BoostTrackableSignal m_signal;
 	std::string* m_name;
 	Entity* m_parent;

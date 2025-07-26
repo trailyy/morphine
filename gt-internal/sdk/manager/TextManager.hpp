@@ -5,8 +5,7 @@
 class TextManager
 {
 public:
-	virtual ~TextManager();
-
-	char pad1[40];
+	void* m_vtable;
+	pad(40);
 };
 #pragma pack(pop)

@@ -4,6 +4,7 @@
 class EffectManager
 {
 public:
-	virtual ~EffectManager();
+	void* m_vtable;
+	pad(50);
 };
 #pragma pack(pop)

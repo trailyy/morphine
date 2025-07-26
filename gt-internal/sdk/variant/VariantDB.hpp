@@ -17,8 +17,7 @@ public:
 class VariantDB
 {
 public:
-	virtual ~VariantDB();
-
+	void* m_vtable;
 	stdext::hash_map<std::string, Variant*> m_data;
 	stdext::hash_map<std::string, FunctionObject*> m_function_data;
 	stdext::hash_map<std::string, Variant*>::iterator m_iterator;

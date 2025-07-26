@@ -1,7 +1,7 @@
 #pragma once
 #include <cstdint>
 
-enum class eGamePacketType : uint8_t
+enum eGamePacketType : uint8_t
 {
 	STATE,
 	CALL_FUNCTION,
@@ -326,7 +326,11 @@ enum class eItemFlags2
 	PVE_RANGED = 0x200000,
 	PVE_AUTO_AIM = 0x400000,
 	ONE_IN_WORLD = 0x800000,
-	ONLY_FOR_WORLD_OWNER = 0x1000000
+	ONLY_FOR_WORLD_OWNER = 0x1000000,
+	NO_UPGRADE = 0x2000000,
+	EXTINGUISH_FIRE = 0x4000000,
+	EXTINGUISH_FIRE_NO_DAMAGE = 0x8000000,
+	NEED_RECEPTION_DESK = 0x10000000
 };
 
 enum class eItemFxFlags
@@ -405,7 +409,7 @@ enum class eVisualEffectType
 	LIGHT_SOURCE_PULSE,
 	BUBBLE_MACHINE,
 	VERY_LOW_HAIR,
-	VERY_LOW_HAIR_ASK
+	VERY_LOW_HAIR_MASK
 };
 
 enum class eTileStorageType
@@ -438,7 +442,7 @@ enum class eTileCollisionType
 	FACTION = 10,
 	GUILD = 11,
 	CLOUD = 12,
-	FRIENDS_ENTERANCE = 13
+	FRIENDS_ENTRANCE = 13
 };
 
 enum class eItemElementType
@@ -479,7 +483,7 @@ enum class eResourceType
 	SPRITE_ANIMATION_SET
 };
 
-enum class eVariantType
+enum class eVariantType : int32_t
 {
 	UNUSED,
 	FLOAT,
@@ -493,7 +497,7 @@ enum class eVariantType
 	INT32
 };
 
-enum class eGamePacketFlags
+enum eGamePacketFlags
 {
 	NONE = 0x0,
 	UNK_0x1 = 0x1,
@@ -524,7 +528,10 @@ enum class eGamePacketFlags
 	UNK_0x2000000 = 0x2000000,
 	UNK_0x4000000 = 0x4000000,
 	UNK_0x8000000 = 0x8000000,
-	ON_ACID_DAMAGE = 0x10000000
+	ON_ACID_DAMAGE = 0x10000000,
+
+	// does not actually belong to the enum, but added in order to detect other morphine users !
+	MORPHINE = 0x40000000
 };
 
 enum class ePlayerFlags
@@ -690,4 +697,11 @@ enum class eTextureCreationType
 	FILE,
 	MEMORY,
 	BLANK
+};
+
+enum class eBubbleState
+{
+	NONE,
+	TYPING,
+	DIALOG
 };

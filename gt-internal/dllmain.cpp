@@ -1,5 +1,5 @@
 /*
-* - gt-sdk - 
+* - morphine - 
 * 
 * base growtopia cheat framework with the following features:
 *     > sdk and module system
@@ -23,30 +23,34 @@
 #include <thread>
 
 #include "globals.hpp"
+#include "config/config.hpp"
 #include "hooks/hooks.hpp"
 #include "hooks/render/renderer/renderer.hpp"
 #include "utils/utils.hpp"
 #include "utils/crash_handler.hpp"
 
+// required by the mapper
+extern "C" __declspec(dllexport) int init_fn(int code, WPARAM wParam, LPARAM lParam) { return CallNextHookEx(NULL, code, wParam, lParam); }
+
 void on_inject(LPVOID param)
 {
     g_utils->attach_console();
-    g_utils->unprotect_process();
 
     g_globals->m_base_address = g_sdk->get_module().get_base_address().get<uintptr_t>();
     print(_("base address: 0x%llx"), g_globals->m_base_address);
 
+    g_config->initialize();
     g_renderer->initialize();
     g_sdk->initialize();
     g_hooks->initialize();
 
-    print(_("gt-sdk initialized"));
+    print(_("successfully initialized morphine"));
 
     /*
     * todo - @trailyy:
     * unloading the cheat is crashing
     * (something related to imgui and fonts)
-    * ((((im too lazyt o fix it)))
+    * ((((im too lazyt o fix)))
     */
 
     while (!g_globals->m_dll.m_unload)
@@ -69,9 +73,6 @@ BOOL APIENTRY DllMain(HMODULE module, DWORD reason, LPVOID param)
     // start learning homie
     // https://learn.microsoft.com/en-us/windows/win32/api/libloaderapi/nf-libloaderapi-disablethreadlibrarycalls
     DisableThreadLibraryCalls(module);
-
-    // add our custom exception handler
-    // SetUnhandledExceptionFilter([](_EXCEPTION_POINTERS* exception) { auto ret = g_crash_handler->on_exception(exception); return ret; });
 
     if (reason == DLL_PROCESS_ATTACH)
     {

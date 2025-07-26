@@ -6,8 +6,7 @@
 class GameTimer
 {
 public:
-	virtual ~GameTimer();
-
+	void* m_vtable;
 	uint32_t m_last_time_ms;
 	uint32_t m_time_ms; // 12
 	uint32_t m_fps_timer; // 16
@@ -20,6 +19,6 @@ public:
 	float m_delta_float;
 	std::deque<float> m_tick_history;
 	uint32_t m_shadow_game_tick;
-	char pad[7];
+	pad(7);
 };
 #pragma pack(pop)

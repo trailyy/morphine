@@ -4,6 +4,14 @@
 #define nullcheckc(x) if (x == nullptr) continue;
 #define nullcheckb(x) if (x == nullptr) break;
 
+#define concat(a, b) a##b
+#define pad_name(n) concat(pad, n)
+
+#define pad(size) \
+private: \
+    std::byte pad_name(__COUNTER__) [size]; \
+public:
+
 #include <set>
 #include <string>
 #include <vector>
@@ -19,6 +27,7 @@
 #include "app/App.hpp"
 #include "app/Entity.hpp"
 #include "component/EntityComponent.hpp"
+#include "constants/Constants.hpp"
 #include "network/ENetClient.hpp"
 #include "network/GameUpdatePacket.hpp"
 #include "component/GameLogicComponent.hpp"
@@ -58,6 +67,7 @@ public:
 
 	void(__cdecl* m_serialize_fn)(TileExtra*, uint8_t*, uint32_t*, bool, World*, bool, Tile*, int) = NULL;
 	void(__cdecl* m_camera_update_fn)(WorldCamera*, Vector2, Vector2) = NULL;
+	void(__cdecl* m_collide_fn)(WorldTileMap*, float, float, float, float, uint32_t, bool, float, float) = NULL;
 
 	void initialize();
 	c_module get_module() const;
@@ -69,11 +79,13 @@ public:
 	ENetClient* get_enet_client();
 	ItemInfoManager* get_item_info_manager();
 	ResourceManager* get_resource_manager();
-	RendererContext* get_renderer_context();
+	void console_log(const char*, ...);
 
 	void send_packet(eNetMessageType, std::string&, void*);
-	void send_packet_raw(eGamePacketType, GameUpdatePacket*, int, void*, void*, int);
-	void process_tank_update_packet(GameLogicComponent*, GameUpdatePacket*);
+	void send_packet_raw(GameUpdatePacket*, int = 0);
+	void send_variant_list(const VariantList&, int = 0, int = 0);
+	void process_tank_update_packet(GameUpdatePacket*);
+	Entity* create_text_label_entity(const std::string&, Vector2, const std::string&);
 
 private:
 	c_module m_game_module = c_module(NULL);
@@ -84,7 +96,10 @@ private:
 	ENetClient* (__cdecl* m_get_enet_client_fn)() = NULL;
 	ItemInfoManager* (__cdecl* m_get_item_info_manager_fn)() = NULL;
 	ResourceManager* (__cdecl* m_get_resource_manager_fn)() = NULL;
-	RendererContext** m_renderer_context = NULL;
+
+	void(__cdecl* m_log_to_console_fn)(const char*, ...) = NULL;
+	Entity* (__cdecl* m_create_text_label_entity_fn)(Entity*, std::string, float, float, std::string) = NULL;
+
 };
 
 extern c_sdk* g_sdk;

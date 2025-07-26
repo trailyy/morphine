@@ -17,15 +17,15 @@ public:
 		};
 	}
 
-	char pad1[4];
+	pad(4);
 	uint16_t m_foreground; // 0x4
 	uint16_t m_background; // 0x6
 	eTileFlags m_flags; // 0x8
 	_Vector2<uint8_t> m_pos; // 0xa
-	char pad2[12];
+	pad(12);
 	Vector4 m_collision_rect; // 0x18
 	TileExtra* m_extra; // 0x28
-	char pad3[112];
+	pad(112);
 };
 #pragma pack(pop)
 

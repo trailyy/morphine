@@ -4,12 +4,12 @@
 class EncryptedFloat
 {
 public:
-	inline float get() const
+	inline float Get() const
 	{
 		return m_encrypted1 - m_weight * 0.5f;
 	}
 
-	inline void set(float value)
+	inline void Set(float value)
 	{
 		m_encrypted1 = value + (m_weight * 0.5f);
 		m_encrypted2 = value + m_weight;
@@ -17,7 +17,7 @@ public:
 
 private:
 	float m_encrypted1;
-	char pad[4];
+	pad(4);
 	float m_encrypted2;
 	float m_weight;
 };

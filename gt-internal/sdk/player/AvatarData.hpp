@@ -4,12 +4,11 @@
 class AvatarData
 {
 public:
-	virtual ~AvatarData();
-
+	void* m_vtable;
 	int m_skin_color; // 8
 	int m_death_animation; // 12
 	int m_respawn_animation; // 16
 	short m_clothing[9];
-	char pad[18];
+	pad(18);
 };
 #pragma pack(pop)

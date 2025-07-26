@@ -4,6 +4,6 @@
 class RTFont
 {
 public:
-	char pad[376];
+	pad(376);
 };
 #pragma pack(pop)

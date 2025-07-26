@@ -399,3 +399,5 @@ FodyWeavers.xsd
 gt-internal/utils/crash_handler.hpp
 gt-internal/utils/crash_handler.cpp
 gt-internal/lib/xorstr/xorstr.hpp
+/build
+gt-internal/utils/crash_handler.hpp

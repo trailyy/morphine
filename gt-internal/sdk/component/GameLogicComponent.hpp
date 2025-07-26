@@ -13,14 +13,14 @@
 class GameLogicComponent : public EntityComponent
 {
 public:
-	char pad[80];
+	pad(88);
 	World* m_world;
 	WorldRenderer* m_world_renderer;
-	char pad2[72];
+	pad(88);
 	NetObjectManager m_net_object_manager;
 	NetAvatar* m_local_player;
 	TextManager m_text_manager;
-	HudIndicatorManager m_hud_indicator_manager;
+	HudIndicatorManager* m_hud_indicator_manager;
 	PlayerItems m_player_items;
 	EffectManager m_effect_manager;
 };

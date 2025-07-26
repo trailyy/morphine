@@ -8,17 +8,16 @@ class WorldRenderer;
 class WorldCamera
 {
 public:
-	virtual ~WorldCamera();
-
+	void* m_vtable;
 	WorldRenderer* m_world_renderer;
 	Vector2 m_camera_pos;
 	Vector2 m_local_player_pos;
-	char pad1[8];
+	pad(8);
 	Vector2 m_zoom_level;
-	char pad2[8];
+	pad(8);
 	Vector2 m_screen_size;
 	Vector2 m_zoomed_screen_size;
-	char pad3[2];
+	pad(2);
 
 	Vector2 world_to_screen(Vector2 pos) const
 	{

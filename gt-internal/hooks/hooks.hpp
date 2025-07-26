@@ -60,7 +60,10 @@ public:
 	void initialize();
 	void shutdown();
 
-	hook_t hkEndScene;
+	hook_t hkIsDebuggerPresent;
+	hook_t hkCheckRemoteDebuggerPresent;
+
+	hook_t hkSwapBuffers;
 
 	hook_t hkUpdate;							// App::Update
 	hook_t hkSetFPSLimit;						// BaseApp::SetFPSLimit

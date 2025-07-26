@@ -8,10 +8,9 @@ class World;
 class WorldRenderer
 {
 public:
-	virtual ~WorldRenderer();
-
-	World* world;
-	char pad1[136];
-	WorldCamera* camera;
+	void* m_vtable;
+	World* m_world;
+	pad(136);
+	WorldCamera* m_camera;
 };
 #pragma pack(pop)

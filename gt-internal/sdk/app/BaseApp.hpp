@@ -27,8 +27,7 @@ struct OSMessage
 class BaseApp
 {
 public:
-	virtual ~BaseApp();
-
+	void* m_vtable;
 	BoostSignal m_sig_input;
 	BoostSignal m_sig_input_move;
 	BoostSignal m_sig_os;
@@ -50,17 +49,17 @@ public:
 	bool m_console_visible;
 	bool m_fps_visible;
 	bool m_initialized;
-	char pad[5];
+	pad(5);
 	GameTimer m_game_timer;
-	Console m_console;
+	Console* m_console;
 	RTFont m_small_font;
 	RTFont m_large_font;
 	RTFont m_fixed_font;
 	RTFont m_growmoji_font;
 	std::deque<OSMessage> m_os_messages;
-	char pad2[8];
+	pad(8);
 	ResourceManager m_resource_manager;
-	char pad3[240];
+	pad(432);
 
 	void AddOSMessage(OSMessage& m)
 	{
@@ -76,14 +75,14 @@ public:
 		this->AddOSMessage(o);
 	}
 
-	void SetVideoMode(int width, int height, bool bFullScreen, float aspectRatio)
+	void SetVideoMode(int width, int height, bool fullscreen, float aspect_ratio)
 	{
 		OSMessage o;
 		o.m_type = eMessageType::SET_VIDEO_MODE;
 		o.m_pos.x = (float)width;
 		o.m_pos.y = (float)height;
-		o.m_fullscreen = bFullScreen;
-		o.m_font_size = aspectRatio;
+		o.m_fullscreen = fullscreen;
+		o.m_font_size = aspect_ratio;
 
 		this->AddOSMessage(o);
 	}

@@ -65,15 +65,20 @@ c_address c_module::find_pattern(std::string pattern, std::string name)
 	{
 		for (std::size_t j = 0; j < bytes.size(); ++j)
 		{
-			if (*reinterpret_cast<std::uint8_t*>(i + j) != bytes[j] && bytes[j] != -1)
+			if (*reinterpret_cast<uint8_t*>(i + j) != bytes[j] && bytes[j] != -1)
 				break;
 
 			if (j == bytes.size() - 1)
 			{
 				ret = i;
 				print(_("found %s @ 0x%llx"), name.c_str(), ret.get());
+
+				break;
 			}
 		}
+
+		if (ret.is_valid())
+			break;
 	}
 
 	if (!ret.is_valid())

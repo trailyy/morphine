@@ -5,262 +5,726 @@
 #include "../enums.hpp"
 #include "../../utils/utils.hpp"
 
-class Entity;
-class EntityComponent;
+#include "../../lib/xorstr/xorstr.hpp"
 
-#pragma pack(push, 1)
+#define C_VAR_SPACE_BYTES 16
+#define C_MAX_VARIANT_LIST_PARMS 7
+
 class Variant
 {
 public:
-	Variant() = default;
+    Variant()
+    {
+        Default();
+    }
 
-	eVariantType GetType() const { return m_type; }
-	float GetFloat() const { return m_float_value; }
-	std::string GetString() const { return m_string_value; }
-	Vector2 GetVec2() const { return m_vec2_value; }
-	Vector GetVec3() const { return m_vec3_value; }
-	uint32_t GetUInt() const { return m_uint_value; }
-	Entity* GetEntity() const { return static_cast<Entity*>(m_ptr); }
-	EntityComponent* GetComponent() const { return static_cast<EntityComponent*>(m_ptr); }
-	Vector4 GetVec4() const { return m_vec4_value; }
-	int32_t GetInt() const { return m_int_value; }
+    Variant(const Variant& v)
+    {
+        Default();
+        *this = v;
+    }
 
-	void Set(float value)
-	{
-		m_float_value = value;
-		m_type = eVariantType::FLOAT;
-	}
+    Variant(int32_t var)
+    {
+        Default();
+        Set(var);
+    }
 
-	void Set(const std::string& value)
-	{
-		m_string_value = value;
-		m_type = eVariantType::STRING;
-	}
+    Variant(uint32_t var)
+    {
+        Default();
+        Set(var);
+    }
 
-	void Set(Vector2 value)
-	{
-		m_vec2_value = value;
-		m_type = eVariantType::VECTOR2;
-	}
+    Variant(float var)
+    {
+        Default();
+        Set(var);
+    }
 
-	void Set(Vector value)
-	{
-		m_vec3_value = value;
-		m_type = eVariantType::VECTOR3;
-	}
+    Variant(float x, float y)
+    {
+        Default();
+        Set(Vector2(x, y));
+    }
 
-	void Set(std::uint32_t value)
-	{
-		m_uint_value = value;
-		m_type = eVariantType::UINT32;
-	}
+    Variant(float x, float y, float z)
+    {
+        Default();
+        Set(Vector(x, y, z));
+    }
 
-	void Set(Entity* value)
-	{
-		m_ptr = static_cast<void*>(value);
-		m_type = eVariantType::ENTITY;
-	}
+    Variant(const Vector2& v2)
+    {
+        Default();
+        Set(v2);
+    }
 
-	void Set(EntityComponent* value)
-	{
-		m_ptr = static_cast<void*>(value);
-		m_type = eVariantType::COMPONENT;
-	}
+    Variant(const Vector& v3)
+    {
+        Default();
+        Set(v3);
+    }
 
-	void Set(Vector4 value)
-	{
-		m_vec4_value = value;
-		m_type = eVariantType::RECT;
-	}
+    Variant(const Vector4& r)
+    {
+        Default();
+        Set(r);
+    }
 
-	void Set(std::int32_t value)
-	{
-		m_int_value = value;
-		m_type = eVariantType::INT32;
-	}
+    Variant(const std::string& var)
+    {
+        Default();
+        Set(var);
+    }
 
-	void operator=(float value) { Set(value); }
-	void operator=(const std::string& value) { Set(value); }
-	void operator=(Vector2 value) { Set(value); }
-	void operator=(Vector value) { Set(value); }
-	void operator=(std::uint32_t value) { Set(value); }
-	void operator=(Entity* value) { Set(value); }
-	void operator=(EntityComponent* value) { Set(value); }
-	void operator=(Vector4 value) { Set(value); }
-	void operator=(std::int32_t value) { Set(value); }
+    Variant(const char* var)
+    {
+        Default();
+        Set(std::string(var));
+    }
 
-	eVariantType m_type;
-	char pad[7];
-	void* m_ptr;
+    void Reset()
+    {
+        m_type = eVariantType::UNUSED;
+    }
 
-	union
-	{
-		uint8_t m_value[16];
-		float m_float_value;
-		Vector2 m_vec2_value;
-		Vector m_vec3_value;
-		uint32_t m_uint_value;
-		Vector4 m_vec4_value;
-		int m_int_value;
-	};
+    void Set(const Variant& v)
+    {
+        switch (v.GetType())
+        {
+            case eVariantType::FLOAT: Set(v.GetFloat()); break;
+            case eVariantType::STRING: Set(v.GetString()); break;
+            case eVariantType::VECTOR2: Set(v.GetVec2()); break;
+            case eVariantType::VECTOR3: Set(v.GetVec3()); break;
+            case eVariantType::UINT32: Set(v.GetUInt()); break;
+            case eVariantType::INT32: Set(v.GetInt()); break;
+            case eVariantType::RECT: Set(v.GetVec4()); break;
+            case eVariantType::ENTITY:
+            case eVariantType::COMPONENT:
+            default: break;
+        }
+    }
 
-	std::string m_string_value;
-	BoostTrackableSignal m_sig_on_changed;
+    void Set(float var)
+    {
+        m_type = eVariantType::FLOAT;
+        *((float*)m_var) = var;
+    }
 
-	friend class VariantList;
+    void Set(uint32_t var)
+    {
+        m_type = eVariantType::UINT32;
+        *((uint32_t*)m_var) = var;
+    }
+
+    void Set(int32_t var)
+    {
+        m_type = eVariantType::INT32;
+        *((int32_t*)m_var) = var;
+    }
+
+    void Set(const char* var)
+    {
+        m_type = eVariantType::STRING;
+        m_string = var;
+    }
+
+    void Set(std::string const& var)
+    {
+        m_type = eVariantType::STRING;
+        m_string = var;
+    }
+
+    void Set(Vector2 const& var)
+    {
+        m_type = eVariantType::VECTOR2;
+        *((Vector2*)m_var) = var;
+    }
+
+    void Set(float x, float y)
+    {
+        Set(Vector2(x, y));
+    }
+
+    void Set(Vector const& var)
+    {
+        m_type = eVariantType::VECTOR3;
+        *((Vector*)m_var) = var;
+    }
+
+    void Set(Vector4 const& var)
+    {
+        m_type = eVariantType::RECT;
+        *((Vector4*)m_var) = var;
+    }
+
+    void Set(float x, float y, float z)
+    {
+        Set(Vector(x, y, z));
+    }
+
+    void operator=(float var)
+    {
+        Set(var);
+    }
+
+    void operator=(int32_t var)
+    {
+        Set(var);
+    }
+
+    void operator=(uint32_t var)
+    {
+        Set(var);
+    }
+
+    void operator=(const char* var)
+    {
+        Set(var);
+    }
+
+    void operator=(std::string const& var)
+    {
+        Set(var);
+    }
+
+    void operator=(Vector2 const& var)
+    {
+        Set(var);
+    }
+
+    void operator=(Vector const& var)
+    {
+        Set(var);
+    }
+
+    void operator=(Vector4 const& var)
+    {
+        Set(var);
+    }
+
+    float& GetFloat()
+    {
+        if (m_type == eVariantType::UNUSED)
+            Set(float(0));
+
+        return *((float*)m_var);
+    }
+
+    int32_t& GetInt()
+    {
+        if (m_type == eVariantType::UNUSED)
+            Set(int32_t(0));
+
+        return *((int32_t*)m_var);
+    }
+
+    uint32_t& GetUInt()
+    {
+        if (m_type == eVariantType::UNUSED)
+            Set(uint32_t(0));
+
+        return *((uint32_t*)m_var);
+    }
+
+    std::string& GetString()
+    {
+        return m_string;
+    }
+
+    Vector2& GetVec2()
+    {
+        if (m_type == eVariantType::UNUSED)
+            Set(Vector2(0, 0));
+
+        return *((Vector2*)m_var);
+    }
+
+    Vector& GetVec3()
+    {
+        if (m_type == eVariantType::UNUSED)
+            Set(Vector(0, 0, 0));
+
+        return *((Vector*)m_var);
+    }
+
+    Vector4& GetVec4()
+    {
+        if (m_type == eVariantType::UNUSED)
+            Set(Vector4(0, 0, 0, 0));
+
+        return *((Vector4*)m_var);
+    }
+
+    const float& GetFloat() const
+    {
+        return *((float*)m_var);
+    }
+
+    const int32_t& GetInt() const
+    {
+        return *((int32_t*)m_var);
+    }
+
+    const uint32_t& GetUInt() const
+    {
+        return *((uint32_t*)m_var);
+    }
+
+    const std::string& GetString() const
+    {
+        return m_string;
+    }
+
+    const Vector2& GetVec2() const
+    {
+        return *((Vector2*)m_var);
+    }
+
+    const Vector& GetVec3() const
+    {
+        return *((Vector*)m_var);
+    }
+
+    const Vector4& GetVec4() const
+    {
+        return *((Vector4*)m_var);
+    }
+
+    eVariantType GetType() const
+    {
+        return m_type;
+    }
+
+    std::string PrintType() const
+    {
+        switch (GetType())
+        {
+            case eVariantType::FLOAT:       return "float"; break;
+            case eVariantType::STRING:      return "string"; break;
+            case eVariantType::VECTOR2:     return "vec2"; break;
+            case eVariantType::VECTOR3:     return "vec"; break;
+            case eVariantType::UINT32:      return "uint32"; break;
+            case eVariantType::INT32:       return "int32"; break;
+            case eVariantType::RECT:        return "rect"; break;
+            case eVariantType::ENTITY:      return "entity"; break;
+            case eVariantType::COMPONENT:   return "component"; break;
+            case eVariantType::UNUSED:      return "unused"; break;
+            default: break;
+        }
+
+        return "<unknown>";
+    }
+
+    std::string Print()
+    {
+        switch (GetType())
+        {
+            case eVariantType::FLOAT: return std::to_string(GetFloat()); break;
+            case eVariantType::STRING: return GetString(); break;
+            case eVariantType::VECTOR2: return GetVec2().dump(); break;
+            case eVariantType::VECTOR3: return GetVec3().dump(); break;
+            case eVariantType::UINT32: return std::to_string(GetUInt()); break;
+            case eVariantType::INT32: return std::to_string(GetInt()); break;
+            case eVariantType::RECT: return GetVec4().dump(); break;
+
+            case eVariantType::ENTITY:
+            case eVariantType::COMPONENT:
+            {
+                std::stringstream ss = { };
+                ss << "0x" << std::hex << std::uppercase << m_pointer;
+                return ss.str();
+            }
+
+            case eVariantType::UNUSED: return "unused"; break;
+            default: return "<invalid>"; break;
+        }
+    }
+
+    Variant& operator=(const Variant& v)
+    {
+        m_type = v.m_type;
+        m_pointer = v.m_pointer;
+        memcpy(m_var, v.m_var, C_VAR_SPACE_BYTES);
+        m_string = v.m_string;
+        return *this;
+    }
+
+    Variant& operator+=(const Variant& v)
+    {
+        if (GetType() == v.GetType())
+        {
+            switch (GetType())
+            {
+                case eVariantType::FLOAT: Set(GetFloat() + v.GetFloat()); break;
+                case eVariantType::STRING: Set(GetString() + v.GetString()); break;
+                case eVariantType::VECTOR2: Set(GetVec2() + v.GetVec2()); break;
+                case eVariantType::VECTOR3: Set(GetVec3() + v.GetVec3()); break;
+                case eVariantType::UINT32: Set(GetUInt() + v.GetUInt()); break;
+                case eVariantType::INT32: Set(GetInt() + v.GetInt()); break;
+                default: break;
+            }
+        }
+        return *this;
+    }
+
+    Variant& operator-=(const Variant& v)
+    {
+        if (GetType() == v.GetType())
+        {
+            switch (GetType())
+            {
+                case eVariantType::FLOAT: Set(GetFloat() + v.GetFloat()); break;
+                case eVariantType::VECTOR2: Set(GetVec2() + v.GetVec2()); break;
+                case eVariantType::VECTOR3: Set(GetVec3() + v.GetVec3()); break;
+                case eVariantType::UINT32: Set(GetUInt() + v.GetUInt()); break;
+                case eVariantType::INT32: Set(GetInt() + v.GetInt()); break;
+                default: break;
+            }
+        }
+        return *this;
+    }
+
+    bool operator==(const Variant& v) const
+    {
+        if (GetType() != v.GetType())
+            return false;
+
+        switch (GetType())
+        {
+            case eVariantType::UNUSED: return true;
+            case eVariantType::FLOAT: return GetFloat() == v.GetFloat();
+            case eVariantType::STRING: return GetString() == v.GetString();
+            case eVariantType::VECTOR2: return GetVec2() == v.GetVec2();
+            case eVariantType::VECTOR3: return GetVec3() == v.GetVec3();
+            case eVariantType::UINT32: return GetUInt() == v.GetUInt();
+            case eVariantType::RECT: return GetVec4() == v.GetVec4();
+            case eVariantType::INT32: return GetInt() == v.GetInt();
+            case eVariantType::ENTITY:
+            case eVariantType::COMPONENT:
+            default: return false;
+        }
+    }
+
+    bool operator!=(const Variant& v) const
+    {
+        return !operator==(v);
+    }
+
+    friend class VariantList;
+
+private:
+    eVariantType m_type;
+    void* m_pointer;
+    uint8_t m_var[C_VAR_SPACE_BYTES];
+    std::string m_string;
+
+    inline void Default()
+    {
+        m_type = eVariantType::UNUSED;
+    }
 };
+
+inline Variant operator+(Variant lhs, const Variant& v)
+{
+    lhs += v;
+    return lhs;
+}
+
+inline Variant operator-(Variant lhs, const Variant& v)
+{
+    lhs -= v;
+    return lhs;
+}
+
+/*
+* 
+* 
+* 
+*/
 
 class VariantList
 {
+    int GetSize(eVariantType type) const
+    {
+        switch (type)
+        {
+            case eVariantType::UNUSED:
+            case eVariantType::COMPONENT:
+            case eVariantType::ENTITY: return 0;
+            case eVariantType::UINT32:
+            case eVariantType::INT32:
+            case eVariantType::FLOAT: return 4;
+            case eVariantType::VECTOR2: return sizeof(Vector2);
+            case eVariantType::VECTOR3: return sizeof(Vector);
+            case eVariantType::RECT: return sizeof(Vector4);
+            default: return 0;
+        }
+    }
+
 public:
-	VariantList() = default;
-	explicit VariantList(std::uint8_t* data) { SerializeFromMem(data); }
+    VariantList() = default;
+    explicit VariantList(uint8_t* data) { SerializeFromMemory(data); }
 
-	void SerializeFromMem(std::uint8_t* data)
-	{
-		using enum eVariantType;
+    Variant& get(int parmNum)
+    {
+        return m_variant[parmNum];
+    }
 
-		std::uint8_t count;
-		g_utils->read(count, data);
+    Variant& operator[](int num)
+    {
+        return m_variant[num];
+    }
 
-		for (std::uint8_t i = 0; i < count; ++i)
-		{
-			std::uint8_t index;
-			g_utils->read(index, data);
+    VariantList(Variant v0)
+    {
+        m_variant[0] = v0;
+    }
 
-			Variant& var = m_variants[index];
-			g_utils->read(var.m_type, data);
+    VariantList(Variant v0, Variant v1)
+    {
+        m_variant[0] = v0;
+        m_variant[1] = v1;
+    }
 
-			switch (var.m_type)
-			{
-				case eVariantType::FLOAT:
-					g_utils->read(var.m_float_value, data);
-					break;
+    VariantList(Variant v0, Variant v1, Variant v2)
+    {
+        m_variant[0] = v0;
+        m_variant[1] = v1;
+        m_variant[2] = v2;
+    }
 
-				case eVariantType::STRING:
-					g_utils->read_string(var.m_string_value, data);
-					break;
+    VariantList(Variant v0, Variant v1, Variant v2, Variant v3)
+    {
+        m_variant[0] = v0;
+        m_variant[1] = v1;
+        m_variant[2] = v2;
+        m_variant[3] = v3;
+    }
 
-				case eVariantType::VECTOR2:
-					g_utils->read(var.m_vec2_value, data);
-					break;
+    VariantList(Variant v0, Variant v1, Variant v2, Variant v3, Variant v4)
+    {
+        m_variant[0] = v0;
+        m_variant[1] = v1;
+        m_variant[2] = v2;
+        m_variant[3] = v3;
+        m_variant[4] = v4;
+    }
 
-				case eVariantType::VECTOR3:
-					g_utils->read(var.m_vec3_value, data);
-					break;
+    VariantList(Variant v0, Variant v1, Variant v2, Variant v3, Variant v4, Variant v5)
+    {
+        m_variant[0] = v0;
+        m_variant[1] = v1;
+        m_variant[2] = v2;
+        m_variant[3] = v3;
+        m_variant[4] = v4;
+        m_variant[5] = v5;
+    }
 
-				case eVariantType::UINT32:
-					g_utils->read(var.m_uint_value, data);
-					break;
+    void Reset()
+    {
+        for (int i = 0; i < C_MAX_VARIANT_LIST_PARMS; i++)
+            m_variant[i].Reset();
+    }
 
-				case eVariantType::INT32:
-					g_utils->read(var.m_int_value, data);
-					break;
+    uint32_t GetRequiredMemory()
+    {
+        int vars_used = 0;
+        int mem_needed = 0;
+        int var_size;
 
-				default:
-					break;
-			}
-		}
-	}
+        for (int i = 0; i < C_MAX_VARIANT_LIST_PARMS; i++)
+        {
+            if (m_variant[i].GetType() == eVariantType::STRING)
+                var_size = m_variant[i].GetString().size() + 4;
+            else
+                var_size = GetSize(m_variant[i].GetType());
 
-	std::uint8_t* SerializeToMem(std::uint32_t* data_size) const
-	{
-		std::uint8_t variant_count = 0;
-		*data_size = 1;
+            if (var_size > 0)
+            {
+                vars_used++;
+                mem_needed += var_size;
+            }
+        }
 
-		for (std::uint8_t i = 0; i < 7; ++i)
-		{
-			const Variant& var = m_variants[i];
+        int total = mem_needed + 1 + (vars_used * 2);
+        return total;
+    }
 
-			if (var.m_type == eVariantType::UNUSED)
-				break;
+    uint8_t* SerializeToMemory(uint32_t* size, uint8_t* data = NULL) const
+    {
+        int vars_used = 0;
+        int mem_needed = 0;
+        int var_size;
 
-			variant_count++;
-			*data_size += 2;
+        for (int i = 0; i < C_MAX_VARIANT_LIST_PARMS; i++)
+        {
+            if (m_variant[i].GetType() == eVariantType::STRING)
+                var_size = m_variant[i].GetString().size() + 4;
+            else
+                var_size = GetSize(m_variant[i].GetType());
 
-			switch (var.m_type)
-			{
-				case eVariantType::FLOAT:
-					*data_size += sizeof(float);
-					break;
+            if (var_size > 0)
+            {
+                vars_used++;
+                mem_needed += var_size;
+            }
+        }
 
-				case eVariantType::STRING:
-					*data_size += static_cast<uint32_t>(sizeof(uint32_t) + var.m_string_value.size());
-					break;
+        int total = mem_needed + 1 + (vars_used * 2);
 
-				case eVariantType::VECTOR2:
-					*data_size += sizeof(Vector2);
-					break;
+        if (!data)
+            data = new uint8_t[total];
 
-				case eVariantType::VECTOR3:
-					*data_size += sizeof(Vector);
-					break;
+        uint8_t* p = data;
+        *(p++) = uint8_t(vars_used);
 
-				case eVariantType::UINT32:
-					*data_size += sizeof(uint32_t);
-					break;
+        for (int idx = 0; idx < C_MAX_VARIANT_LIST_PARMS; idx++)
+        {
+            uint8_t type = uint8_t(m_variant[idx].GetType());
 
-				case eVariantType::INT32:
-					*data_size += sizeof(int32_t);
-					break;
+            if (m_variant[idx].GetType() == eVariantType::STRING)
+            {
+                uint32_t len = m_variant[idx].GetString().size();
 
-				default:
-					break;
-			}
-		}
+                memcpy(p++, &idx, 1);
+                memcpy(p++, &type, 1);
 
-		std::uint8_t* data = new std::uint8_t[*data_size];
-		std::uint8_t* data_start = data;
+                memcpy(p, &len, sizeof(len));
+                p += sizeof(len);
 
-		g_utils->write(variant_count, data);
+                memcpy(p, m_variant[idx].GetString().c_str(), len);
+                p += len;
+            }
+            else
+            {
+                var_size = GetSize(m_variant[idx].GetType());
+                if (var_size > 0)
+                {
+                    memcpy(p++, &idx, 1);
+                    memcpy(p++, &type, 1);
 
-		for (std::uint8_t i = 0; i < variant_count; ++i)
-		{
-			const Variant& var = m_variants[i];
+                    memcpy(p, m_variant[idx].m_var, var_size);
+                    p += var_size;
+                }
+            }
+        }
 
-			g_utils->write(i, data);
-			g_utils->write(var.m_type, data);
+        if (size)
+            *size = total;
 
-			switch (var.m_type)
-			{
-				case eVariantType::FLOAT:
-					g_utils->write(var.m_float_value, data);
-					break;
+        return data;
+    }
 
-				case eVariantType::STRING:
-					g_utils->write_string(var.m_string_value, data);
-					break;
+    bool SerializeFromMemory(uint8_t* data, int* read = 0)
+    {
+        uint8_t* p = data;
+        uint8_t count = *(p++);
 
-				case eVariantType::VECTOR2:
-					g_utils->write(var.m_vec2_value, data);
-					break;
+        for (int i = 0; i < count; i++)
+        {
+            uint8_t index = *(p++);
+            uint8_t type = *(p++);
 
-				case eVariantType::VECTOR3:
-					g_utils->write(var.m_vec3_value, data);
-					break;
+            switch (eVariantType(type))
+            {
+                case eVariantType::STRING:
+                {
+                    uint32_t len;
+                    memcpy(&len, p, sizeof(len));
+                    p += sizeof(len);
 
-				case eVariantType::UINT32:
-					g_utils->write(var.m_uint_value, data);
-					break;
+                    std::string v;
+                    v.resize(len);
+                    memcpy(&v[0], p, len);
+                    p += len;
 
-				case eVariantType::INT32:
-					g_utils->write(var.m_int_value, data);
-					break;
+                    m_variant[index].Set(v);
+                    break;
+                }
+                case eVariantType::UINT32:
+                {
+                    uint32_t v;
+                    memcpy(&v, p, sizeof(uint32_t));
+                    p += sizeof(uint32_t);
 
-				default:
-					break;
-			}
-		}
+                    m_variant[index].Set(v);
+                    break;
+                }
+                case eVariantType::INT32:
+                {
+                    int32_t v;
+                    memcpy(&v, p, sizeof(int32_t));
+                    p += sizeof(int32_t);
 
-		return data_start;
-	}
+                    m_variant[index].Set(v);
+                    break;
+                }
+                case eVariantType::FLOAT:
+                {
+                    float v;
+                    memcpy(&v, p, sizeof(float));
+                    p += sizeof(float);
 
-	inline Variant& Get(std::size_t index) { return m_variants[index]; }
-	inline const Variant& Get(std::size_t index) const { return m_variants[index]; }
+                    m_variant[index].Set(v);
+                    break;
+                }
+                case eVariantType::VECTOR2:
+                {
+                    Vector2 v;
+                    memcpy(&v, p, sizeof(Vector2));
+                    p += sizeof(Vector2);
 
-	inline Variant& operator[](std::size_t index) { return m_variants[index]; }
-	inline const Variant& operator[](std::size_t index) const { return m_variants[index]; }
+                    m_variant[index].Set(v);
+                    break;
+                }
+                case eVariantType::VECTOR3:
+                {
+                    Vector v;
+                    memcpy(&v, p, sizeof(Vector));
+                    p += sizeof(Vector);
 
-	Variant m_variants[7] = { };
+                    m_variant[index].Set(v);
+                    break;
+                }
+                case eVariantType::RECT:
+                {
+                    Vector4 v;
+                    memcpy(&v, p, sizeof(Vector4));
+                    p += sizeof(Vector4);
+
+                    m_variant[index].Set(v);
+                    break;
+                }
+                default:
+                {
+                    if (read)
+                        *read = 0;
+
+                    return false;
+                }
+            }
+        }
+
+        if (read)
+            *read = int(p - data);
+
+        return true;
+    }
+
+    Variant m_variant[C_MAX_VARIANT_LIST_PARMS];
+
+    void Print()
+    {
+        print(_("------- variantlist -------"));
+        for (int i = 0; i < C_MAX_VARIANT_LIST_PARMS; i++)
+        {
+            if (m_variant[i].GetType() == eVariantType::UNUSED)
+                continue;
+
+            print(std::string(std::to_string(i) + _(": (") + m_variant[i].PrintType() + _(") ") + m_variant[i].Print()).c_str());
+        }
+        print(_("--------------------------"));
+    }
 };
-#pragma pack(pop)

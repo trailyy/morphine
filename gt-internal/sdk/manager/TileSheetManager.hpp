@@ -5,8 +5,7 @@
 class TileSheetManager
 {
 public:
-	virtual ~TileSheetManager();
-
-	char pad1[24];
+	void* m_vtable;
+	pad(24);
 };
 #pragma pack(pop)

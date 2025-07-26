@@ -69,7 +69,7 @@
     <ClInclude Include="lib\xorstr\xorstr.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="hooks\render\EndScene.hpp">
+    <ClInclude Include="hooks\render\SwapBuffers.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="sdk\component\EntityComponent.hpp">
@@ -249,9 +249,6 @@
     <ClInclude Include="lib\imgui\imgui.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="lib\imgui\imgui_impl_dx9.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="lib\imgui\imgui_impl_win32.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -265,6 +262,30 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="lib\imgui\imstb_truetype.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\imgui\imgui_impl_opengl3.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\imgui\imgui_impl_opengl3_loader.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="config\config.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="hooks\winapi\IsDebuggerPresent.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="hooks\winapi\CheckRemoteDebuggerPresent.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="sdk\constants\Constants.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="sdk\proton\TextScanner.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="hooks\world\WorldTileMap_Collide.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
@@ -323,9 +344,6 @@
     <ClCompile Include="lib\imgui\imgui_draw.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="lib\imgui\imgui_impl_dx9.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="lib\imgui\imgui_impl_win32.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -333,6 +351,12 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="lib\imgui\imgui_widgets.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="lib\imgui\imgui_impl_opengl3.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="config\config.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

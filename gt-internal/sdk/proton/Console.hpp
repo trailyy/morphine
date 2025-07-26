@@ -8,11 +8,10 @@
 class Console
 {
 public:
-	virtual ~Console();
-
+	void* m_vtable;
 	BoostSignal m_sig_on_text_added;
 	uint32_t m_max_lines;
 	std::deque<std::string> m_stream;
-	char pad[84];
+	pad(84);
 };
 #pragma pack(pop)

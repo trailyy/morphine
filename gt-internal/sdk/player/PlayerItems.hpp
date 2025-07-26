@@ -13,20 +13,19 @@ struct InventoryItem
 class PlayerItems
 {
 public:
-	virtual ~PlayerItems();
-
+	void* m_vtable;
 	uint16_t m_clothes[12];
-	std::list<InventoryItem> m_items; // 0x20
+	std::vector<InventoryItem> m_items; // 0x20
 	uint16_t m_quick_slots[4];
 	uint32_t m_backpack_size; // 0x38
-	char pad1[4];
-	std::list<InventoryItem> m_filtered_items; // 0x40
-	char pad2[8];
+	pad(4);
+	std::vector<InventoryItem> m_filtered_items; // 0x40
+	pad(8);
 	uint16_t m_selected_item; // 0x58
-	char pad3[6];
+	pad(6);
 	int m_gems; // 0x60
-	char pad4[4];
+	pad(4);
 	int m_gems_collected; // 0x70
-	char pad5[20];
+	pad(68);
 };
 #pragma pack(pop)

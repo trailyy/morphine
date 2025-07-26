@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup Label="ProjectConfigurations">
     <ProjectConfiguration Include="Debug|Win32">
@@ -24,7 +24,7 @@
     <ProjectGuid>{a7faba2e-3b01-45a8-b630-81131794136a}</ProjectGuid>
     <RootNamespace>gt_internal</RootNamespace>
     <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
-    <ProjectName>gt-internal</ProjectName>
+    <ProjectName>morphine</ProjectName>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
@@ -74,8 +74,8 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <OutDir>$(SolutionDir)build\</OutDir>
     <IntDir>$(SolutionDir)build\obj\$(ProjectName)\</IntDir>
-    <IncludePath>$(DXSDK_DIR)Include;$(IncludePath)</IncludePath>
-    <LibraryPath>$(DXSDK_DIR)Lib\x64;$(LibraryPath)</LibraryPath>
+    <IncludePath>$(IncludePath)</IncludePath>
+    <LibraryPath>$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <OutDir>$(SolutionDir)build\</OutDir>
@@ -153,9 +153,11 @@
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableUAC>false</EnableUAC>
+      <AdditionalDependencies>opengl32.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="config\config.hpp" />
     <ClInclude Include="globals.hpp" />
     <ClInclude Include="hooks\component\TrackHandlerComponent_HandleTrackPacket.hpp" />
     <ClInclude Include="hooks\app\App_Update.hpp" />
@@ -170,15 +172,19 @@
     <ClInclude Include="hooks\network\SendPacketRaw.hpp" />
     <ClInclude Include="hooks\player\NetAvatar_CanMessageT4.hpp" />
     <ClInclude Include="hooks\player\NetAvatar_OnPunch.hpp" />
-    <ClInclude Include="hooks\render\EndScene.hpp" />
+    <ClInclude Include="hooks\render\SwapBuffers.hpp" />
     <ClInclude Include="hooks\render\renderer\renderer.hpp" />
     <ClInclude Include="hooks\render\WndProc.hpp" />
+    <ClInclude Include="hooks\winapi\IsDebuggerPresent.hpp" />
+    <ClInclude Include="hooks\winapi\CheckRemoteDebuggerPresent.hpp" />
     <ClInclude Include="hooks\world\Tile_Serialize.hpp" />
     <ClInclude Include="hooks\world\WorldCamera_CameraUpdate.hpp" />
+    <ClInclude Include="hooks\world\WorldTileMap_Collide.hpp" />
     <ClInclude Include="lib\fnv1a\fnv1a.h" />
     <ClInclude Include="lib\imgui\imconfig.h" />
     <ClInclude Include="lib\imgui\imgui.h" />
-    <ClInclude Include="lib\imgui\imgui_impl_dx9.h" />
+    <ClInclude Include="lib\imgui\imgui_impl_opengl3.h" />
+    <ClInclude Include="lib\imgui\imgui_impl_opengl3_loader.h" />
     <ClInclude Include="lib\imgui\imgui_impl_win32.h" />
     <ClInclude Include="lib\imgui\imgui_internal.h" />
     <ClInclude Include="lib\imgui\imstb_rectpack.h" />
@@ -203,6 +209,7 @@
     <ClInclude Include="sdk\component\LevelTouchComponent.hpp" />
     <ClInclude Include="sdk\component\TrackHandlerComponent.hpp" />
     <ClInclude Include="sdk\app\Entity.hpp" />
+    <ClInclude Include="sdk\constants\Constants.hpp" />
     <ClInclude Include="sdk\enums.hpp" />
     <ClInclude Include="sdk\manager\EffectManager.hpp" />
     <ClInclude Include="sdk\manager\HudIndicatorManager.hpp" />
@@ -224,6 +231,7 @@
     <ClInclude Include="sdk\proton\EncryptedFloat.hpp" />
     <ClInclude Include="sdk\proton\GameTimer.hpp" />
     <ClInclude Include="sdk\proton\RTFont.hpp" />
+    <ClInclude Include="sdk\proton\TextScanner.hpp" />
     <ClInclude Include="sdk\proton\Vector.hpp" />
     <ClInclude Include="sdk\render\RendererContext.hpp" />
     <ClInclude Include="sdk\render\Surface.hpp" />
@@ -242,6 +250,7 @@
     <ClInclude Include="utils\utils.hpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="config\config.cpp" />
     <ClCompile Include="dllmain.cpp" />
     <ClCompile Include="globals.cpp" />
     <ClCompile Include="hooks\hooks.cpp" />
@@ -249,7 +258,7 @@
     <ClCompile Include="lib\imgui\imgui.cpp" />
     <ClCompile Include="lib\imgui\imgui_demo.cpp" />
     <ClCompile Include="lib\imgui\imgui_draw.cpp" />
-    <ClCompile Include="lib\imgui\imgui_impl_dx9.cpp" />
+    <ClCompile Include="lib\imgui\imgui_impl_opengl3.cpp" />
     <ClCompile Include="lib\imgui\imgui_impl_win32.cpp" />
     <ClCompile Include="lib\imgui\imgui_tables.cpp" />
     <ClCompile Include="lib\imgui\imgui_widgets.cpp" />

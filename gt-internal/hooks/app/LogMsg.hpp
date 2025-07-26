@@ -3,7 +3,6 @@
 #include "../../lib/xorstr/xorstr.hpp"
 
 // found in my old project, so why not salvage?
-
 using log_msg_t = void(__cdecl*)(const char*, ...);
 int __cdecl Hooked_LogMsg(const char* msg, ...)
 {

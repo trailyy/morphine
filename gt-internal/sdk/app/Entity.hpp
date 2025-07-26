@@ -10,8 +10,7 @@
 class Entity
 {
 public:
-    virtual ~Entity();
-
+    void* m_vtable;
     BoostTrackableSignal m_trackable_signal;
     BoostSignal m_sig_on_removed;
     std::string m_name;

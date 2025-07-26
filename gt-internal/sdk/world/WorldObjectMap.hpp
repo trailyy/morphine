@@ -6,24 +6,22 @@
 class WorldObject
 {
 public:
-    virtual ~WorldObject();
-
+    void* m_vtable;
     Vector2 m_pos;
     uint16_t m_item_id;
     uint8_t m_count;
     uint8_t m_flags;
     uint32_t m_object_id;
     uint32_t m_insert_timestamp;
-    char pad1[20];
+    pad(20);
 };
 static_assert(sizeof(WorldObject) == 0x30);
 
 class WorldObjectMap
 {
 public:
-    virtual ~WorldObjectMap();
-
-    char pad1[72];
+    void* m_vtable;
+    pad(72);
     std::list<WorldObject> m_objects;
 };
 #pragma pack(pop)

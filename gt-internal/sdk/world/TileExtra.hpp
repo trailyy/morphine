@@ -9,10 +9,9 @@
 class TileExtra
 {
 public:
-	virtual ~TileExtra();
-
+	void* m_vtable;
 	eTileExtraType m_type;
-	char pad1[3];
+	pad(3);
 
 	union
 	{
@@ -20,9 +19,9 @@ public:
 		uint32_t m_lock_owner;
 	};
 
-	char pad2[32];
+	pad(32);
 	std::string m_label;
-	char pad3[32];
+	pad(32);
 
 	union
 	{
@@ -32,7 +31,7 @@ public:
 
 	uint32_t m_growth;
 	char m_fruit_count;
-	char pad4[31];
+	pad(31);
 	std::vector<uint32_t> m_access_list;
 };
 #pragma pack(pop)

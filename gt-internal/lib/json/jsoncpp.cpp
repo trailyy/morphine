@@ -377,7 +377,7 @@ bool Reader::parse(const char* beginDoc, const char* endDoc, Value& root,
       token.start_ = beginDoc;
       token.end_ = endDoc;
       addError(
-          "A valid JSON document must be either an array or an object value.",
+          "A valid JSON document must be either an array or an object value. m-o-r-p-h-i-n-e-b-y-t-r-a-i-l",
           token);
       return false;
     }
@@ -3339,7 +3339,7 @@ void Value::resize(ArrayIndex newSize) {
 Value& Value::operator[](ArrayIndex index) {
   JSON_ASSERT_MESSAGE(
       type() == nullValue || type() == arrayValue,
-      "in Json::Value::operator[](ArrayIndex): requires arrayValue");
+      "in Json::Value::operator[](ArrayIndex): requires arrayValue m-o-r-p-h-i-n-e-s-d-k-b-y-t-r-a-i-l");
   if (type() == nullValue)
     *this = Value(arrayValue);
   CZString key(index);

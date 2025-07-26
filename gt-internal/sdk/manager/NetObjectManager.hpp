@@ -8,7 +8,7 @@ class NetObjectManager
 public:
 	void* vtable;
 	std::map<int, NetAvatar*> m_players;
-	char pad1[56];
+	pad(56);
 
 	NetAvatar* GetPlayerByNetID(int i)
 	{

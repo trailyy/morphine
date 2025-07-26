@@ -11,19 +11,44 @@ c_module c_sdk::get_module() const
 void c_sdk::initialize()
 {
 	/*
+	* tl;dr:
 	* themida/vmprotect hook NtProtectVirtualMemory
-	* and various other functions that make it 
-	* unable to use it properly, so here we restore 
-	* or "unhook" one of the crucial ones
+	* and various other functions such as NtReadVM, NtWriteVM (etc.)
+	* for their own usage and in order to prevent 3rd party software
+	* from calling those functions and their highlevel wrappers
+	* (VirtualProtect, VirtualQuery, WPM, RPM, etc.)
+	* 
+	* you can check the entire list of hooked functions by yourself
+	* with for example cheat engine (scan for patches->ntdll, kernelbase, etc.)
+	* 
+	* here we restore the crucial one (in our case)
 	*/
 
 	// get handle to ntdll.dll
 	c_module ntdll(_("ntdll.dll"));
 
 	void* nt_protect_virtual_memory_fn = ntdll.get_proc_address(_("NtProtectVirtualMemory")).get();
-	g_utils->write_memory(nt_protect_virtual_memory_fn, _("4C 8B D1 B8 50"));
 
-	print(_("patched ntdll.dll!NtProtectVirtualMemory"));
+	/*
+	*       
+	*       the hook 
+	* jmp 7FFFxxxxxxxx -> mov r10,rcx (4c 8b d1)
+	*					  mov eax,50  (b8 50)
+	* 
+	* simple as that bro how crazy is that
+	*/
+
+	g_utils->write_memory(nt_protect_virtual_memory_fn, _("4C 8B D1 B8 50"));
+	
+	print(_("restored ntdll.dll!NtProtectVirtualMemory"));
+
+	// mutex bullshit fix (open many growtopia gabb method 2017 no save.dat stealer working 2025 bots enet proxy support socks5)
+	g_utils->write_memory(m_game_module.find_pattern(_("74 ? 48 8B C8 E8 ? ? ? ? CF"), _("MutexPatch")).get(), _("90 90"));
+	g_utils->close_mutex();
+
+	// so mapper doesnt get confused
+	if (!SetWindowTextA(g_globals->m_dll.m_window, _("Growtopia | morphine")))
+		print(_("could not set window title (%d)"), GetLastError());
 
 	/* 
 	* todo - @trailyy:
@@ -34,65 +59,78 @@ void c_sdk::initialize()
 	*/
 
 	// "get" type functions for core classes
-	m_get_app_fn = m_game_module.find_pattern(_("E8 ? ? ? ? F3 0F 5C B0 ? ? ? ?"), _("GetApp"))
+	m_get_app_fn = m_game_module.find_pattern(_("E8 ? ? ? ? 8B 4F 5C"), _("GetApp"))
 		.relative()
 		.get<decltype(m_get_app_fn)>();
-	m_get_base_app_fn = m_game_module.find_pattern(_("E8 ? ? ? ? 48 8D 48 28"), _("GetBaseApp"))
+	m_get_base_app_fn = m_game_module.find_pattern(_("E8 ? ? ? ? 41 8B 46 58"), _("GetBaseApp"))
 		.relative()
 		.get<decltype(m_get_base_app_fn)>();
-	m_get_game_logic_fn = m_game_module.find_pattern(_("E8 ? ? ? ? 44 8B A0 ? ? ? ?"), _("GetGameLogic"))
-		.relative()
+	m_get_game_logic_fn = m_game_module.find_pattern(_("48 83 EC ? E8 ? ? ? ? 48 8B C8 E8 ? ? ? ? 48 83 C4"), _("GetGameLogic"))
 		.get<decltype(m_get_game_logic_fn)>();
-	m_get_entity_root_fn = m_game_module.find_pattern(_("E8 ? ? ? ? 48 8B C8 48 8D 54 24 ? E8 ? ? ? ? 48 8B F0 48 8D 4C 24 ? E8 ? ? ? ? 48 8D 15 ? ? ? ?"), _("GetEntityRoot"))
+	m_get_entity_root_fn = m_game_module.find_pattern(_("E8 ? ? ? ? 48 8B C8 FF 57 20"), _("GetEntityRoot"))
 		.relative()
 		.get<decltype(m_get_entity_root_fn)>();
-	m_get_enet_client_fn = m_game_module.find_pattern(_("E8 ? ? ? ? 48 8B C8 4C 8D 4D B0"), _("GetClient"))
+	m_get_enet_client_fn = m_game_module.find_pattern(_("E8 ? ? ? ? 89 74 24 28"), _("GetClient"))
 		.relative()
 		.get<decltype(m_get_enet_client_fn)>();
-	m_get_item_info_manager_fn = m_game_module.find_pattern(_("E8 ? ? ? ? 8B 57 14"), _("GetItemInfoManager"))
+	m_get_item_info_manager_fn = m_game_module.find_pattern(_("E8 ? ? ? ? 48 69 D3 ? ? ? ? B9"), _("GetItemInfoManager"))
 		.relative()
 		.get<decltype(m_get_item_info_manager_fn)>();
-	m_get_resource_manager_fn = m_game_module.find_pattern(_("48 8D 81 ? ? ? ? C3 CC CC CC CC CC CC CC CC 40 53 48 83 EC 20 8B D9"), _("GetResourceManager"))
+	m_get_resource_manager_fn = m_game_module.find_pattern(_("E8 ? ? ? ? 48 8B C8 45 33 C0 48 8D 55 78"), _("GetResourceManager"))
+		.relative()
 		.get<decltype(m_get_resource_manager_fn)>();
-	m_renderer_context = m_game_module.find_pattern(_("48 8B 05 ? ? ? ? 75 28"), _("RendererContext"))
-		.to_absolute(3, 0)
-		.get<decltype(m_renderer_context)>();
 
 	/* Functions */
 
 	// App
-	m_app_update_fn = m_game_module.find_pattern(_("48 89 5C 24 ? 66 0F A4 E8 ?"), _("App::Update"))
+	m_app_update_fn = m_game_module.find_pattern(_("48 8B C4 48 89 58 10 48 89 70 18 48 89 78 20 55 41 56 41 57 48 8D 68 C8 "), _("App::Update"))
 		.get<decltype(m_app_update_fn)>();
-	m_set_fps_limit_fn = m_game_module.find_pattern(_("E8 ? ? ? ? 90 48 8D 4D F0 E8 ? ? ? ? 48 8B 4D 30"), _("BaseApp::SetFPSLimit"))
+	m_set_fps_limit_fn = m_game_module.find_pattern(_("E8 ? ? ? ? E8 ? ? ? ? 83 E8 02"), _("BaseApp::SetFPSLimit"))
 		.relative()
 		.get<decltype(m_set_fps_limit_fn)>();
-	m_log_msg_fn = m_game_module.find_pattern(_("E8 ? ? ? ? 0F B6 6F 02"), _("LogMsg"))
+	m_log_msg_fn = m_game_module.find_pattern(_("E8 ? ? ? ? 45 3B F7"), _("LogMsg"))
 		.relative()
 		.get<decltype(m_log_msg_fn)>();
+	m_log_to_console_fn = m_game_module.find_pattern(_("48 89 4C 24 ? 48 89 54 24 ? 4C 89 44 24 ? 4C 89 4C 24 ? 53 57 B8 ? ? ? ? E8 ? ? ? ? 48 2B E0 48 8B 05 ? ? ? ? 48 33 C4 48 89 84 24 ? ? ? ? 48 8B D9 33 D2 48 8D 4C 24 ? 41 B8 ? ? ? ? E8 ? ? ? ? 48 8D BC 24 ? ? ? ? E8 ? ? ? ? 48 89 7C 24 ? 48 8D 54 24 ? 33 FF"), _("LogToConsole"))
+		.get<decltype(m_log_to_console_fn)>();
+	m_create_text_label_entity_fn = m_game_module.find_pattern(_("48 8B C4 48 89 58 ? 55 56 57 41 56 41 57 48 8D 68 ? 48 81 EC ? ? ? ? 0F 29 70 ? 0F 29 78 ? 48 8B 05 ? ? ? ? 48 33 C4 48 89 45 ? 0F 28 F3"), _("CreateTextLabelEntity"))
+		.get<decltype(m_create_text_label_entity_fn)>();
 
 	// Component
-	m_dialog_is_opened_fn = m_game_module.find_pattern(_("E8 ? ? ? ? 84 C0 74 19 48 8B 03"), _("GameLogicComponent::DialogIsOpened"))
+	m_dialog_is_opened_fn = m_game_module.find_pattern(_("E8 ? ? ? ? 48 8B 75 27"), _("GameLogicComponent::DialogIsOpened"))
 		.relative()
 		.get<decltype(m_dialog_is_opened_fn)>();
-	m_on_text_game_message_fn = m_game_module.find_pattern(_("48 89 5C 24 ? 48 89 74 24 ? 48 89 7C 24 ? 55 48 8D AC 24 ? ? ? ? 48 81 EC ? ? ? ? 48 8B 05 ? ? ? ? 48 33 C4 48 89 85 ? ? ? ? 48 8B FA"), _("GameLogicComponent::OnTextGameMessage"))
+	m_on_text_game_message_fn = m_game_module.find_pattern(_("E8 ? ? ? ? E9 ? ? ? ? 48 8B 4F 18 E8 ? ? ? ? 48 8B D8"), _("GameLogicComponent::OnTextGameMessage"))
+		.relative()
 		.get<decltype(m_on_text_game_message_fn)>();
-	m_process_tank_update_packet_fn = m_game_module.find_pattern(_("48 89 54 24 ? 0F B7 C3"), _("GameLogicComponent::ProcessTankUpdatePacket"))
+	m_process_tank_update_packet_fn = m_game_module.find_pattern(_("48 89 54 24 ? 48 89 4C 24 ? B8 ? ? ? ?"), _("GameLogicComponent::ProcessTankUpdatePacket"))
 		.get<decltype(m_process_tank_update_packet_fn)>();
-	m_handle_touch_at_world_coordinates_fn = m_game_module.find_pattern(_("E8 ? ? ? ? 48 8B 5C 24 ? 48 83 C4 20 5F C3 CC CC 40 53 48 83 EC 50"), _("LevelTouchComponent::HandleTouchAtWorldCoordinates"))
+	m_handle_touch_at_world_coordinates_fn = m_game_module.find_pattern(_("E8 ? ? ? ? 48 8B 8D ? ? ? ? 48 33 CC E8 ? ? ? ? 4C 8D 9C 24 ? ? ? ? 49 8B 5B 50 41 0F 28 73 ? 41 0F 28 7B ? 45 0F 28 43 ? 45 0F 28 4B ? 49 8B E3"), _("LevelTouchComponent::HandleTouchAtWorldCoordinates"))
 		.relative()
 		.get<decltype(m_handle_touch_at_world_coordinates_fn)>();
-	m_handle_track_packet_fn = m_game_module.find_pattern(_("E8 ? ? ? ? 90 48 8D 4D C0 E8 ? ? ? ? 49 8B CD"), _("TrackHandleComponent::HandleTrackPacket"))
+	m_handle_track_packet_fn = m_game_module.find_pattern(_("E8 ? ? ? ? EB 4E 48 8D 0D ? ? ? ?"), _("TrackHandleComponent::HandleTrackPacket"))
 		.relative()
 		.get<decltype(m_handle_track_packet_fn)>();
 
 	// Network
-	m_send_packet_fn = m_game_module.find_pattern(_("E9 ? ? ? ? FB 78 46"), _("SendPacket"))
+	m_send_packet_fn = m_game_module.find_pattern(_("E8 ? ? ? ? E8 ? ? ? ? 48 8D 85 ? ? ? ? "), _("SendPacket"))
+		.relative()
 		.get<decltype(m_send_packet_fn)>();
-	m_send_packet_raw_fn = m_game_module.find_pattern(_("E9 ? ? ? ? 64 79 C3"), _("SendPacketRaw"))
+	m_send_packet_raw_fn = m_game_module.find_pattern(_("E8 ? ? ? ? EB 50 C1 E9 18"), _("SendPacketRaw"))
+		.relative()
 		.get<decltype(m_send_packet_raw_fn)>();
+
+	m_can_message_t4_fn = m_game_module.find_pattern(_("40 53 48 83 EC ? 48 8B D9 E8 ? ? ? ? 48 8B C8 E8 ? ? ? ? 8B C8 E8 ? ? ? ? 39 83 ? ? ? ? 76 ? 32 C0"), _("NetAvatar::CanMessageT4"))
+		.get<decltype(m_can_message_t4_fn)>();
+	m_collide_fn = m_game_module.find_pattern(_("E8 ? ? ? ? 48 85 C0 74 ? ? ? ? 48 8B CB E8 ? ? ? ? B0"), _("WorldTileMap::Collide"))
+		.relative()
+		.get<decltype(m_collide_fn)>();
 
 	if (m_get_base_app_fn && m_set_fps_limit_fn)
 		m_set_fps_limit_fn(m_get_base_app_fn(), 0.0f);
+
+	get_app()->GetVariant(_("move_down_primary"))->Set(0x53);
+	get_app()->GetVariant(_("move_down_secondary"))->Set(0x28);
 }
 
 App* c_sdk::get_app()
@@ -144,9 +182,16 @@ ResourceManager* c_sdk::get_resource_manager()
 	return resource_manager;
 }
 
-RendererContext* c_sdk::get_renderer_context()
+void c_sdk::console_log(const char* message, ...)
 {
-	return *m_renderer_context;
+	char buf[1024];
+
+	va_list args;
+	va_start(args, message);
+	vsnprintf(buf, sizeof(buf), message, args);
+	va_end(args);
+
+	m_log_to_console_fn(message);
 }
 
 void c_sdk::send_packet(eNetMessageType type, std::string& packet, void* peer)
@@ -154,21 +199,26 @@ void c_sdk::send_packet(eNetMessageType type, std::string& packet, void* peer)
 	if (!m_send_packet_fn)
 		return;
 
-	m_send_packet_fn(type, packet, peer);
+	m_send_packet_fn(type, packet, get_enet_client()->m_peer);
 }
 
-void c_sdk::send_packet_raw(eGamePacketType type, GameUpdatePacket* packet, int size, void* packet_sender, void* peer, int flags)
+void c_sdk::send_packet_raw(GameUpdatePacket* packet, int flags)
 {
 	if (!m_send_packet_raw_fn)
 		return;
 
-	m_send_packet_raw_fn(static_cast<int>(type), packet, size, packet_sender, peer, flags);
+	m_send_packet_raw_fn(eNetMessageType::NET_MESSAGE_GAME_PACKET, packet, sizeof(GameUpdatePacket), 0, get_enet_client()->m_peer, flags);
 }
 
-void c_sdk::process_tank_update_packet(GameLogicComponent* game_logic, GameUpdatePacket* packet)
+void c_sdk::process_tank_update_packet(GameUpdatePacket* packet)
 {
 	if (!m_get_game_logic_fn || !m_process_tank_update_packet_fn)
 		return;
 
-	m_process_tank_update_packet_fn(game_logic, packet);
+	m_process_tank_update_packet_fn(get_game_logic(), packet);
+}
+
+Entity* c_sdk::create_text_label_entity(const std::string& entity_name, Vector2 pos, const std::string& text)
+{
+	return m_create_text_label_entity_fn(get_entity_root(), entity_name, pos.x, pos.y, text);
 }

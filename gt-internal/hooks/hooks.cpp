@@ -4,7 +4,7 @@
 #include "../utils/utils.hpp"
 
 // hooks
-#include "render/EndScene.hpp"
+#include "render/SwapBuffers.hpp"
 #include "render/WndProc.hpp"
 
 #include "app/App_Update.hpp"
@@ -23,6 +23,9 @@
 #include "player/NetAvatar_CanMessageT4.hpp" // missing
 #include "player/NetAvatar_OnPunch.hpp" // missing
 
+#include "winapi/IsDebuggerPresent.hpp"
+#include "winapi/CheckRemoteDebuggerPresent.hpp"
+
 #include "world/Tile_Serialize.hpp" // missing
 #include "world/WorldCamera_CameraUpdate.hpp" // missing
 
@@ -33,11 +36,12 @@ void c_hooks::initialize()
 	// initialize minhook... duh...
 	MH_Initialize();
 
-	// AppClass might be common, so lets search for both the window class and window name
-	g_globals->m_dll.m_window = FindWindowA(_("AppClass"), _("Growtopia"));
+	hkSwapBuffers.hook(g_renderer->get_swap_buffers(), Hooked_SwapBuffers);
+	print(_("hooked swapbuffers"));
 
-	hkEndScene.hook(g_renderer->get_methods_table()[42], Hooked_EndScene);
-	print(_("hooked endscene"));
+	c_module ntdll_dll = c_module(_("ntdll.dll"));
+	hkIsDebuggerPresent.hook(ntdll_dll.get_proc_address(_("IsDebuggerPresent")).get(), Hooked_IsDebuggerPresent);
+	hkCheckRemoteDebuggerPresent.hook(ntdll_dll.get_proc_address(_("CheckRemoteDebuggerPresent")).get(), Hooked_CheckRemoteDebuggerPresent);
 
 	// hook our game functions
 	hkUpdate.hook(g_sdk->m_app_update_fn, Hooked_Update);
@@ -50,6 +54,11 @@ void c_hooks::initialize()
 	hkHandleTouchAtWorldCoordinates.hook(g_sdk->m_handle_touch_at_world_coordinates_fn, Hooked_HandleTouchAtWorldCoordinates);
 	hkHandleTrackPacket.hook(g_sdk->m_handle_track_packet_fn, Hooked_HandleTrackPacket);
 
+	hkSendPacket.hook(g_sdk->m_send_packet_fn, Hooked_SendPacket);
+	hkSendPacketRaw.hook(g_sdk->m_send_packet_raw_fn, Hooked_SendPacketRaw);
+
+	hkCanMessageT4.hook(g_sdk->m_can_message_t4_fn, Hooked_CanMessageT4);
+
 	// "hook" wndproc
 	g_globals->m_dll.m_wndproc = reinterpret_cast<WNDPROC>(SetWindowLongPtrA(g_globals->m_dll.m_window, GWLP_WNDPROC, (LONG_PTR)Hooked_WndProc));
 
@@ -59,9 +68,9 @@ void c_hooks::initialize()
 void c_hooks::shutdown()
 {
 	// restore the wndproc to the original one
-	SetWindowLongPtrA(g_globals->m_dll.m_window, GWLP_WNDPROC, (LONG_PTR)g_globals->m_dll.m_wndproc);
+	SetWindowLongPtrA(g_globals->m_dll.m_window, GWLP_WNDPROC, reinterpret_cast<LONG_PTR>(g_globals->m_dll.m_wndproc));
 
-	hkEndScene.clear();
+	hkSwapBuffers.clear();
 
 	hkUpdate.clear();
 	hkSetFPSLimit.clear();
@@ -71,15 +80,16 @@ void c_hooks::shutdown()
 	hkOnTextGameMessage.clear();
 	hkProcessTankUpdatePacket.clear();
 	hkHandleTouchAtWorldCoordinates.clear();
-	hkHandleTrackPacket.clear();	
+	hkHandleTrackPacket.clear();
 
-	g_renderer->shutdown();
+	hkSendPacket.clear();
+	hkSendPacketRaw.clear();
 
 	// cleanup
 	auto ctx = ImGui::GetCurrentContext();
 	if (ctx)
 	{
-		ImGui_ImplDX9_Shutdown();
+		ImGui_ImplOpenGL3_Shutdown();
 		ImGui_ImplWin32_Shutdown();
 		ImGui::DestroyContext();
 	}
@@ -87,5 +97,5 @@ void c_hooks::shutdown()
 	// do i even have to comment this
 	MH_Uninitialize();
 
-	print(_("unhooked everything =(\n"));
+	print(_("unhooked everything =("));
 }

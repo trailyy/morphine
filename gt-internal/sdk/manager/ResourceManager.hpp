@@ -16,8 +16,7 @@ public:
 class ResourceManager
 {
 public:
-	virtual ~ResourceManager();
-
+	void* m_vtable;
 	std::map<std::string, Resource*> m_data;
 };
 #pragma pack(pop)

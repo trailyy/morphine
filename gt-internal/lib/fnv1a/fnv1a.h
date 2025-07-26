@@ -1,7 +1,7 @@
 #pragma once
 #include <stdint.h>
 
-using hash32_t = std::uint32_t;
+using hash32_t = uint32_t;
 
 namespace hash
 {

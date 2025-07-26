@@ -10,10 +10,9 @@ class World;
 class WorldTileMap
 {
 public:
-	virtual ~WorldTileMap();
-
+	void* m_vtable;
 	_Vector2<int> m_size;
-	char pad1[8];
+	pad(8);
 	std::vector<Tile> m_tile_map;
 	World* m_world;
 

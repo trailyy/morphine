@@ -5,8 +5,7 @@
 class HudIndicatorManager
 {
 public:
-	virtual ~HudIndicatorManager();
-
-	char pad[24];
+	void* m_vtable;
+	pad(24);
 };
 #pragma pack(pop)

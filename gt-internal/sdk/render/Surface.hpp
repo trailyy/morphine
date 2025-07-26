@@ -8,11 +8,10 @@
 class Surface
 {
 public:
-	virtual ~Surface();
-
+	void* m_vtable;
 	BoostTrackableSignal m_trackable_signal;
 	uint16_t m_texture_id;
-	char pad1[2];
+	pad(2);
 	Vector2 m_texture_size;
 	Vector2 m_original_size;
 	bool m_alpha;
